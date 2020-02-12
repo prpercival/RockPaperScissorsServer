@@ -52,6 +52,9 @@ namespace RockPaperScissorsServer.Controllers
         {
             var serverLobby = Lobbies.Where(x => x.Id == lobby.Id).FirstOrDefault();
 
+            if (serverLobby.Users.Count >= 2)
+                return null;
+
             lobby.Users.TryGetValue(userId, out var user);           
 
             serverLobby.Users.Add(userId, user);
@@ -86,7 +89,7 @@ namespace RockPaperScissorsServer.Controllers
 
         // POST api/<controller>
         [HttpPost, Route("heartbeat")]
-        public IEnumerable<Lobby> HeartBeat(string userId)
+        public Lobby HeartBeat(string userId)
         {
             var serverLobby = Lobbies.Where(x => x.Users.ContainsKey(userId)).FirstOrDefault();
 
@@ -94,7 +97,7 @@ namespace RockPaperScissorsServer.Controllers
 
             user.Expiration = DateTime.Now.AddSeconds(5);
 
-            return Lobbies;
+            return serverLobby;
         }
 
         // PUT api/<controller>/5
@@ -102,6 +105,9 @@ namespace RockPaperScissorsServer.Controllers
         public Lobby Shoot([FromBody]User user)
         {
             var serverLobby = Lobbies.Where(x => x.Users.ContainsKey(user.Id)).FirstOrDefault();
+
+            if (serverLobby == null)
+                return null;
 
             serverLobby.Users.TryGetValue(user.Id, out var serverUser);
 
